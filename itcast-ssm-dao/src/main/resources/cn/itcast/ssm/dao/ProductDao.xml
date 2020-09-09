@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.itcast.ssm.dao.ProductDao">
+    <resultMap id="productMap" type="cn.itcast.ssm.domain.Product">
+        <id property="id" column="id"/>
+        <result property="productNum" column="productNum"/>
+        <result property="productName" column="productName"/>
+        <result property="cityName" column="cityName"/>
+        <result property="departureTime" column="departureTime"/>
+        <result property="productPrice" column="productPrice"/>
+        <result property="productDesc" column="productDesc"/>
+        <result property="productStatus" column="productStatus"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="productMap">
+        select * from product
+    </select>
+
+    <select id="findByProductName" parameterType="java.lang.String" resultMap="productMap">
+        select * from product where 1=1 and productName like concat('%',#{productName},'%')
+    </select>
+
+    <insert id="save" parameterType="cn.itcast.ssm.domain.Product">
+        insert into product(id,productNum,productName,cityName,DepartureTime,productPrice,productDesc,productStatus)
+               values (#{id},#{productNum},#{productName},#{cityName},#{departureTime},#{productPrice},#{productDesc},#{productStatus})
+    </insert>
+
+    <delete id="deleteByIds" parameterType="java.lang.String">
+        delete from product where id in
+        <foreach collection="array" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findById" parameterType="java.lang.String" resultMap="productMap">
+        select * from product where id=#{id}
+    </select>
+
+    <update id="update" parameterType="cn.itcast.ssm.domain.Product">
+        update product
+        set
+        productNum=#{productNum}, productName=#{productName}, cityName=#{cityName}, departureTime=#{departureTime}, productPrice=#{productPrice}, productDesc=#{productDesc}, productStatus=#{productStatus}
+        where id=#{id}
+    </update>
+
+
+</mapper>

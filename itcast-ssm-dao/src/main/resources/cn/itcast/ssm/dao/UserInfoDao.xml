@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.itcast.ssm.dao.UserInfoDao">
+    <resultMap id="userInfoMap" type="cn.itcast.ssm.domain.UserInfo">
+        <id property="id" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="phoneNum" column="phoneNum"/>
+        <result property="status" column="status"/>
+        <collection property="roles" ofType="cn.itcast.ssm.domain.Role">
+            <id property="id" column="role_id"/>
+            <result property="roleName" column="roleName"/>
+            <result property="roleDesc" column="roleDesc"/>
+            <collection property="permissions" ofType="cn.itcast.ssm.domain.Permission">
+                <id property="id" column="permission_id"/>
+                <result property="permissionName" column="permissionName"/>
+                <result property="url" column="url"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <resultMap id="roleMap" type="cn.itcast.ssm.domain.Role">
+        <id property="id" column="role_id"/>
+        <result property="roleName" column="roleName"/>
+        <result property="roleDesc" column="roleDesc"/>
+    </resultMap>
+
+    <resultMap id="userRoleMap" type="cn.itcast.ssm.domain.UserRole">
+        <id property="id" column="ur_id"/>
+        <result property="userId" column="userId"/>
+        <result property="roleId" column="roleId"/>
+    </resultMap>
+
+    <insert id="saveUserInfo" parameterType="cn.itcast.ssm.domain.UserInfo">
+        INSERT INTO userinfo (user_id,username,email,PASSWORD,phoneNum,STATUS)
+        values(#{id},#{username},#{email},#{password},#{phoneNum},#{status})
+    </insert>
+
+    <select id="findByName" resultMap="userInfoMap" parameterType="java.lang.String">
+        SELECT us.*,ro.role_id,ro.roleName,ro.roleDesc
+        FROM userInfo us
+        LEFT OUTER JOIN user_role ur ON us.user_id = ur.userId
+        LEFT OUTER JOIN roles ro ON ur.roleId = ro.role_id
+        WHERE us.username = #{username}
+    </select>
+    <!--
+    <select id="findAll" resultMap="userInfoMap">
+        SELECT us.*,ro.*,pe.*
+        FROM userinfo us
+        LEFT OUTER JOIN user_role ur ON us.user_id = ur.userId
+        LEFT OUTER JOIN roles ro ON ur.roleId = ro.role_id
+        LEFT OUTER JOIN role_permission rp ON ro.role_id = rp.roleId
+        LEFT OUTER JOIN permission pe ON rp.permissionId = pe.permission_id
+    </select>
+    -->
+    <select id="findAll" resultMap="userInfoMap">
+        SELECT * FROM userinfo
+    </select>
+
+    <select id="findById" resultMap="userInfoMap" parameterType="java.lang.String">
+        SELECT us.*,ro.*,pe.*
+        FROM userinfo us
+        LEFT OUTER JOIN user_role ur ON us.user_id = ur.userId
+        LEFT OUTER JOIN roles ro ON ur.roleId = ro.role_id
+        LEFT OUTER JOIN role_permission rp ON ro.role_id = rp.roleId
+        LEFT OUTER JOIN permission pe ON rp.permissionId = pe.permission_id
+        WHERE us.user_id = #{id}
+    </select>
+
+    <select id="findByOtherRolesById" resultMap="roleMap" parameterType="java.lang.String">
+        SELECT * FROM roles
+        WHERE roles.role_id NOT IN(SELECT ifnull(ro.role_id,"") FROM userinfo us
+        LEFT OUTER JOIN user_role ur ON us.user_id = ur.userId
+        LEFT OUTER JOIN roles ro ON ur.roleId = ro.role_id
+        WHERE us.user_id = #{id});
+    </select>
+
+    <insert id="insertUserRole" parameterType="cn.itcast.ssm.domain.UserRole">
+        INSERT INTO user_role (ur_id, userId, roleId)
+        VALUES
+        <foreach collection="userRoleList" index="index" separator="," item="item">
+            (#{item.id},#{item.userId},#{item.roleId})
+        </foreach>
+    </insert>
+
+
+    <!--
+    <insert id="insert">
+        INSERT INTO user_role (userId, roleId)
+        VALUES
+        <foreach collection="rolesId" index="index" separator="," item="item">
+            (#{userId},#{item})
+        </foreach>
+    </insert>
+    -->
+
+</mapper>

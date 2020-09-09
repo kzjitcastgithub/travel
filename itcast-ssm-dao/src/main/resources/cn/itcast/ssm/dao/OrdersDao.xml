@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.itcast.ssm.dao.OrdersDao">
+    <resultMap id="ordersMap" type="cn.itcast.ssm.domain.Orders">
+        <id property="id" column="id"/>
+        <result property="orderNum" column="orderNum"/>
+        <result property="orderTime" column="orderTime"/>
+        <result property="orderStatus" column="orderStatus"/>
+        <result property="peopleCount" column="peopleCount"/>
+        <result property="payType" column="payType"/>
+        <result property="orderDesc" column="orderDesc"/>
+        <association property="member" javaType="cn.itcast.ssm.domain.Member">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="nickname" column="nickname"/>
+            <result property="phoneNum" column="phoneNum"/>
+            <result property="email" column="email"/>
+        </association>
+        <association property="product" javaType="cn.itcast.ssm.domain.Product">
+            <id property="id" column="id"/>
+            <result property="productNum" column="productNum"/>
+            <result property="productName" column="productName"/>
+            <result property="cityName" column="cityName"/>
+            <result property="departureTime" column="departureTime"/>
+            <result property="productPrice" column="productPrice"/>
+            <result property="productDesc" column="productDesc"/>
+            <result property="productStatus" column="productStatus"/>
+        </association>
+        <collection property="travellers" ofType="cn.itcast.ssm.domain.Traveller">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="sex" column="sex"/>
+            <result property="phoneNum" column="phoneNum"/>
+            <result property="credentialsType" column="credentialsType"/>
+            <result property="credentialsNum" column="credentialsNum"/>
+            <result property="travellerType" column="travellerType"/>
+        </collection>
+    </resultMap>
+
+    <!--
+    <select id="findAll" resultMap="ordersMap">
+        SELECT o.*,me.*,pr.*,tr.*
+        FROM orders o
+        LEFT OUTER JOIN member me ON o.memberId = me.id
+        LEFT OUTER JOIN product pr ON o.productId = pr.id
+        LEFT OUTER JOIN traveller tr ON o.id IN(SELECT orderId FROM order_traveller WHERE travellerId=tr.id)
+    </select>
+    -->
+
+    <select id="findPageable" parameterType="java.lang.String" resultMap="ordersMap">
+        SELECT o.*,pr.*
+        FROM orders o
+        INNER JOIN product pr ON o.productId = pr.id
+        and pr.productName like concat('%',#{productName},'%')
+    </select>
+
+
+    <select id="findById" resultMap="ordersMap" parameterType="java.lang.String">
+        SELECT o.*,me.*,pr.*,tr.*
+        FROM orders o
+        LEFT OUTER JOIN member me ON o.memberId = me.id
+        LEFT OUTER JOIN product pr ON o.productId = pr.id
+        LEFT OUTER JOIN traveller tr ON o.id IN(SELECT orderId FROM order_traveller WHERE travellerId=tr.id)
+        where o.id=#{id}
+    </select>
+
+</mapper>
